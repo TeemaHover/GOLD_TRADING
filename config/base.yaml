@@ -1,0 +1,99 @@
+# Base configuration. Layer environment-specific files on top with
+#   xaubot data ingest -c config/local.yaml -s data.source.path=...
+# Secrets NEVER live here - they come from environment variables only.
+
+project_name: xaubot
+seed: 42
+log_level: INFO
+
+paths:
+  data_root: data
+  artifact_root: artifacts
+
+instrument:
+  symbol: XAUUSD
+  contract_size: 100.0      # ounces per 1.00 lot
+  tick_size: 0.01
+  tick_value: 1.0           # USD per tick per 1.00 lot
+  min_lot: 0.01
+  lot_step: 0.01
+  max_lot: 50.0
+  commission_per_lot: 7.0   # USD round turn - CONFIRM against your broker
+  typical_spread: 0.20      # price units - CONFIRM against your broker
+  quote_currency: USD
+
+calendar:
+  # Anchored to New York local time, so DST is handled automatically.
+  tz: America/New_York
+  week_open_weekday: 6      # Sunday
+  week_open_time: "18:00"
+  week_close_weekday: 4     # Friday
+  week_close_time: "17:00"
+  daily_break_start: "17:00"
+  daily_break_end: "18:00"
+  holidays: []              # e.g. ["2026-12-25", "2027-01-01"]
+
+sessions:
+  windows:
+    - session: ASIA
+      tz: Asia/Tokyo
+      start: "09:00"
+      end: "18:00"
+    - session: LONDON
+      tz: Europe/London
+      start: "08:00"
+      end: "16:30"
+    - session: NY
+      tz: America/New_York
+      start: "08:00"
+      end: "17:00"
+  # Which sessions the bot may open trades in. Asia is off by default: gold's
+  # Asian range is thin and the spread is widest, so the cost hurdle is highest
+  # exactly where the moves are smallest.
+  tradable: [LONDON, NY, LONDON_NY_OVERLAP]
+
+data:
+  symbol: XAUUSD
+  base_timeframe: 5m
+  context_timeframes: [15m, 1h, 4h, 1d]
+
+  source:
+    path: D:/Strategy/data/xauusd_5m.csv
+    timeframe: 5m
+    timestamp_column: datetime
+    # CRITICAL: whether the file stamps bars with their OPEN or CLOSE time.
+    # Getting this wrong shifts every feature by one bar - a silent look-ahead
+    # bias that no downstream test can detect. Confirm against your exporter.
+    timestamp_convention: open
+    source_tz: null           # null => timestamps are tz-aware or already UTC
+    delimiter: null           # null => sniff
+    decimal: "."
+    volume_semantics: tick_count   # MT5 "volume" on XAUUSD is a tick count
+
+  validation:
+    min_completeness: 0.90
+    max_null_fraction: 0.01
+    extreme_return_sigma: 12.0
+    max_gap_bars_reported: 20
+    flag_zero_volume: true
+    fail_on_error: true
+
+  cleaning:
+    duplicate_policy: keep_last
+    drop_non_positive_prices: true
+    drop_ohlc_inconsistent: true
+    clip_ohlc_inconsistent: false
+    drop_null_rows: true
+    # Synthetic bars are fabricated observations the model would learn from,
+    # and fabricated highs/lows can trigger stops in the backtester that never
+    # existed. Off by default; leaving a gap is the honest option.
+    fill_missing_bars: false
+    max_forward_fill_bars: 0
+    drop_off_grid: true
+
+  resample:
+    daily_anchor_tz: America/New_York
+    daily_anchor_time: "17:00"
+    h4_anchor_offset_minutes: 0
+    min_bars_for_complete: 0.5
+    drop_incomplete_last_bar: true

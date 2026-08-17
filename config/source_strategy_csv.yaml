@@ -1,0 +1,35 @@
+# Overlay for the development dataset at D:/Strategy/data/xauusd_5m.csv
+#
+#   xaubot data ingest -c config/source_strategy_csv.yaml
+#
+# This file is NOT a broker feed. Its schedule was derived empirically from the
+# missing-bar distribution (see docs/DATA_CONTRACT.md):
+#
+#   - trading week opens Monday 01:00 UTC   (a broker feed opens Sunday evening)
+#   - trading week closes Saturday 00:00 UTC
+#   - daily maintenance break 00:00-01:00 UTC, fixed in UTC year-round
+#
+# A real broker's schedule is anchored to a local exchange close and therefore
+# shifts by an hour across DST. Do not reuse this overlay for broker data --
+# the whole point of separating it is that the calendar is a property of the
+# feed, not of the instrument.
+
+calendar:
+  tz: UTC
+  week_open_weekday: 0        # Monday
+  week_open_time: "01:00"
+  week_close_weekday: 5       # Saturday
+  week_close_time: "00:00"
+  daily_break_start: "00:00"
+  daily_break_end: "01:00"
+  holidays:
+    - "2025-12-25"            # Christmas Day
+    - "2026-01-01"            # New Year's Day
+    - "2026-04-03"            # Good Friday
+
+data:
+  resample:
+    # Match the feed's own trading day (01:00 UTC roll) rather than the 17:00
+    # New York convention, so daily bars do not straddle the feed's break.
+    daily_anchor_tz: UTC
+    daily_anchor_time: "01:00"

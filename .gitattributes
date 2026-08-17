@@ -1,0 +1,15 @@
+# Normalise line endings so a Windows working tree does not produce CRLF
+# churn in diffs on GitHub. Text files are stored as LF in the repository.
+* text=auto eol=lf
+
+*.py     text eol=lf
+*.yaml   text eol=lf
+*.yml    text eol=lf
+*.toml   text eol=lf
+*.md     text eol=lf
+*.csv    text eol=lf
+
+*.parquet binary
+*.pt      binary
+*.pkl     binary
+*.png     binary

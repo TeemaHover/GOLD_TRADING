@@ -1,0 +1,23 @@
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+build/
+dist/
+
+# Never commit data or artifacts
+data/
+artifacts/
+notebooks/.ipynb_checkpoints/
+*.parquet
+*.pt
+*.pkl
+*.db
+*.sqlite3
+
+# Secrets
+.env
+.env.local
