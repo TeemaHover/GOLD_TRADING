@@ -5,13 +5,18 @@ __pycache__/
 .mypy_cache/
 .ruff_cache/
 *.egg-info/
-build/
-dist/
 
-# Never commit data or artifacts
-data/
-artifacts/
-notebooks/.ipynb_checkpoints/
+# Leading slashes matter. An unanchored "data/" matches a directory of that
+# name at ANY depth, which silently excluded the src/xaubot/data/ package -
+# the repo cloned and imported cleanly right up until something needed the
+# data layer. Anchor anything meant to apply only at the repo root.
+/build/
+/dist/
+/data/
+/artifacts/
+/notebooks/.ipynb_checkpoints/
+
+# Generated data and model artifacts, wherever they land.
 *.parquet
 *.pt
 *.pkl
